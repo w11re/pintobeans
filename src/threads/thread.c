@@ -340,6 +340,9 @@ thread_set_priority (int new_priority)
   if (new_priority < cur_priority){
     thread_yield();
   }
+  if (cur_priority < thread_current()->priority){
+    donate();
+  }
 }
 
 /* Returns the current thread's priority. */
@@ -605,13 +608,16 @@ donate (void)
   /*Don't donate any priority
   //if no one is holding the lock
   */
-  if (mutex->holder == NULL) {
-    return;
+  if (mutex->holder != NULL) {
+    mutex->holder->priority = current->priority;
   }
-
-
-  mutex->holder->priority = current->priority;
+	else {
+		return;	
+	}
 }
+
+
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
+
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
