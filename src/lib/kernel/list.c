@@ -522,3 +522,11 @@ list_min (struct list *list, list_less_func *less, void *aux)
     }
   return min;
 }
+/*
+bool
+thread_less_func(struct list_elem *a, struct list_elem *b, void *aux)
+{
+  return  list_entry(a, struct thread, elem)->priority > 
+	  list_entry(b, struct thread, elem)->priority;
+}
+*/

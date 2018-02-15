@@ -335,7 +335,11 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
+  int cur_priority = thread_current ()->priority;
   thread_current ()->priority = new_priority;
+  if (new_priority < cur_priority){
+    thread_yield();
+  }
 }
 
 /* Returns the current thread's priority. */
@@ -552,6 +556,7 @@ thread_schedule_tail (struct thread *prev)
 static void
 schedule (void) 
 {
+  list_sort(&ready_list, priority_comp, NULL);
   struct thread *cur = running_thread ();
   struct thread *next = next_thread_to_run ();
   struct thread *prev = NULL;
@@ -559,7 +564,7 @@ schedule (void)
   ASSERT (intr_get_level () == INTR_OFF);
   ASSERT (cur->status != THREAD_RUNNING);
   ASSERT (is_thread (next));
-
+  
   if (cur != next)
     prev = switch_threads (cur, next);
   thread_schedule_tail (prev);
@@ -579,6 +584,34 @@ allocate_tid (void)
   return tid;
 }
 
+//struct list_elem; do struct thread *ta = list_entry(list_elem *x, struct thread, elem)
+
+/* list_less_func for list_sort to compare priority values. */
+bool
+priority_comp (struct list_elem *a, struct list_elem *b, void *aux)
+{
+  return list_entry(a, struct thread, elem)->priority >
+	 list_entry(b, struct thread, elem)->priority;
+}
+
+
+/*Donate priority for mutex release*/
+void
+donate (void)
+{
+  struct thread *current = thread_current();
+  struct lock *mutex = current->wanted_lock;
+  
+  /*Don't donate any priority
+  //if no one is holding the lock
+  */
+  if (mutex->holder == NULL) {
+    return;
+  }
+
+
+  mutex->holder->priority = current->priority;
+}
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
