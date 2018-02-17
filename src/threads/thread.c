@@ -568,7 +568,7 @@ schedule (void)
   ASSERT (cur->status != THREAD_RUNNING);
   ASSERT (is_thread (next));
   
-  if (cur != next)
+  if (cur->priority != next)
     prev = switch_threads (cur, next);
   thread_schedule_tail (prev);
 }
