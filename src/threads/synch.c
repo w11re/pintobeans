@@ -195,27 +195,19 @@ lock_acquire (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
- 
-  sema_down(&lock->semaphore);
-  lock->holder = thread_current ();
-
-  enum intr_level off;
-  off = intr_disable();
-
 
   /*Lock is free*/
   if(lock->holder == NULL){
     thread_current()->wanted_lock = NULL;
-    sema_down (&lock->semaphore);
     lock->holder = thread_current ();
   } 
   else {
     thread_current()->wanted_lock = lock;
-    donate();
+    list_insert_ordered(lock->holder->donators_list, thread_current()->donatelem, &priority_comp);
+    donate(lock->holder);
   }
-  
-
-  intr_set_level(off);
+ 
+  sema_down (&lock->semaphore);
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -232,23 +224,14 @@ lock_try_acquire (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (!lock_held_by_current_thread (lock));
   
-  sema_down (&lock->semaphore);
   lock->holder = thread_current ();
-  enum intr_level off;
-  off = intr_disable();
-
 
   success = sema_try_down (&lock->semaphore);
-  lock->holder->priority = lock->holder->old_priority;
 
-  if (success){
+  if (success)
+  {
     lock->holder = thread_current ();
   }
-  else{
-    thread_current()->wanted_lock = lock;
-  }
-  intr_set_level (off);
-
 
   return success;
 }
@@ -264,15 +247,16 @@ lock_release (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
+  while(!list_empty(&lock->holder->donators_list))
+    {
+       list_pop_front(&lock->holder->donators_list);
+    }
 
-  enum intr_level off;
-  off = intr_disable();
-  
-
-  lock->holder = NULL;
   sema_up (&lock->semaphore);
 
-  intr_set_level (off);
+  lock->holder->priority = lock->holder->old_priority;
+  lock->holder = NULL;
+  
 }
 
 /* Returns true if the current thread holds LOCK, false

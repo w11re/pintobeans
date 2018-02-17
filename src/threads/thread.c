@@ -336,6 +336,7 @@ void
 thread_set_priority (int new_priority) 
 {
   int cur_priority = thread_current ()->priority;
+  thread_current ()->old_priority = cur_priority;
   thread_current ()->priority = new_priority;
   if (new_priority < cur_priority){
     thread_yield();
@@ -463,6 +464,10 @@ init_thread (struct thread *t, const char *name, int priority)
   ASSERT (t != NULL);
   ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
   ASSERT (name != NULL);
+
+
+  list_init (&t->donators_list);
+
 
   memset (t, 0, sizeof *t);
   t->status = THREAD_BLOCKED;
@@ -600,20 +605,22 @@ priority_comp (struct list_elem *a, struct list_elem *b, void *aux)
 
 /*Donate priority for mutex release*/
 void
-donate (void)
-{
-  struct thread *current = thread_current();
-  struct lock *mutex = current->wanted_lock;
-  
-  /*Don't donate any priority
-  //if no one is holding the lock
-  */
-  if (mutex->holder != NULL) {
-    mutex->holder->priority = current->priority;
+donate (thread *t)
+{ 
+  if (list_empty(&t->donators_list)) 
+  {
+    t->priority = t->old_priority;
   }
-	else {
-		return;	
-	}
+  else {
+    if (list_front(&t->donators_list > t->old_priority) 
+    {
+      t->priority = list_front(&t->donators_list);
+    }
+    else 
+    {
+      t->priority = t->old_priority;
+    }
+  }
 }
 
 

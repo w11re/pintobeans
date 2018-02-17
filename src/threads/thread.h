@@ -94,8 +94,8 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
     struct list_elem donatelem;         /* Donate list's element. */
+    struct list donators_list;     
     struct lock *wanted_lock;           /* Mutex thread tries to acquire. */
-    struct pridon_list;                 /* Priority donate linked list. */
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
