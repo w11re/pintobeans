@@ -203,7 +203,7 @@ lock_acquire (struct lock *lock)
   } 
   else {
     thread_current()->wanted_lock = lock;
-    list_insert_ordered(lock->holder->donators_list, thread_current()->donatelem, &priority_comp);
+    list_insert_ordered(&lock->holder->donators_list, &thread_current()->donatelem, &priority_comp, NULL);
     donate(lock->holder);
   }
  
@@ -247,10 +247,11 @@ lock_release (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
-  while(!list_empty(&lock->holder->donators_list))
+  /*while(!list_empty(&lock->holder->donators_list))
     {
        list_pop_front(&lock->holder->donators_list);
     }
+*/
 
   sema_up (&lock->semaphore);
 

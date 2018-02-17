@@ -308,7 +308,7 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread) 
-    list_push_back (&ready_list, &cur->elem);
+    list_insert_ordered(&ready_list, &cur->elem, &priority_comp, NULL);
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -335,14 +335,12 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
-  int cur_priority = thread_current ()->priority;
-  thread_current ()->old_priority = cur_priority;
+  int stored_priority = thread_current ()->priority;
+
+  thread_current ()->old_priority = stored_priority;
   thread_current ()->priority = new_priority;
-  if (new_priority < cur_priority){
+  if (thread_current()->priority < list_entry(list_front(&ready_list), struct thread, elem)->priority){
     thread_yield();
-  }
-  if (cur_priority < thread_current()->priority){
-    donate();
   }
 }
 
@@ -474,6 +472,7 @@ init_thread (struct thread *t, const char *name, int priority)
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
+  t->old_priority = priority;
   t->magic = THREAD_MAGIC;
 
   old_level = intr_disable ();
@@ -564,7 +563,7 @@ thread_schedule_tail (struct thread *prev)
 static void
 schedule (void) 
 {
-  list_sort(&ready_list, priority_comp, NULL);
+
   struct thread *cur = running_thread ();
   struct thread *next = next_thread_to_run ();
   struct thread *prev = NULL;
@@ -605,16 +604,17 @@ priority_comp (struct list_elem *a, struct list_elem *b, void *aux)
 
 /*Donate priority for mutex release*/
 void
-donate (thread *t)
+donate (struct thread *t)
 { 
   if (list_empty(&t->donators_list)) 
   {
     t->priority = t->old_priority;
   }
   else {
-    if (list_front(&t->donators_list > t->old_priority) 
+    if (list_entry(list_front(&t->donators_list), struct thread, donatelem)->priority > t->old_priority )
     {
-      t->priority = list_front(&t->donators_list);
+      struct thread *p = list_entry(list_front(&t->donators_list), struct thread, donatelem);
+      t->priority = p->priority;
     }
     else 
     {
