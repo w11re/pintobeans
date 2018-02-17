@@ -200,7 +200,7 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
-
+  test_thread();
   return tid;
 }
 
@@ -613,7 +613,8 @@ donate (struct thread *t)
   else {
     if (list_entry(list_front(&t->donators_list), struct thread, donatelem)->priority > t->old_priority )
     {
-      struct thread *p = list_entry(list_front(&t->donators_list), struct thread, donatelem);
+      struct thread *p = list_entry(list_front(&t->donators_list), 
+      struct thread, donatelem);
       t->priority = p->priority;
     }
     else 
@@ -621,6 +622,23 @@ donate (struct thread *t)
       t->priority = t->old_priority;
     }
   }
+}
+
+void
+test_thread (void) 
+{
+  if ( list_empty(&ready_list) )
+  {
+    return;
+  }
+  struct thread *t = list_entry(list_front(&ready_list), 
+  struct thread, elem);
+
+  if (thread_current()->priority < t->priority)
+  {
+    thread_yield();
+  }
+
 }
 
 
