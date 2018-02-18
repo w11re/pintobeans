@@ -209,7 +209,8 @@ lock_acquire (struct lock *lock)
   } 
   else {
     thread_current()->wanted_lock = lock;
-    list_insert_ordered(&lock->holder->donators_list, &thread_current()->donatelem, &priority_comp, NULL);
+    list_insert_ordered(&lock->holder->donators_list, 
+    &thread_current()->donatelem, &priority_comp, NULL);
     donate(lock->holder);
   }
  
@@ -263,7 +264,8 @@ lock_release (struct lock *lock)
 
   struct list_elem *elem;
   struct thread *t;
-  for (elem=list_begin(&thread_current() -> donators_list); elem != list_end(&thread_current() -> donators_list); elem = list_next(elem)) 
+  for (elem=list_begin(&thread_current() -> donators_list);
+  elem != list_end(&thread_current()->donators_list); elem = list_next(elem)) 
   {
     t = list_entry(elem, struct thread, donatelem);
       if (t -> wanted_lock == lock)

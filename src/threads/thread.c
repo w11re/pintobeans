@@ -343,7 +343,8 @@ thread_set_priority (int new_priority)
   {
     check_priority();
   }
-  if (thread_current()->priority < list_entry(list_begin(&ready_list), struct thread, elem)->priority){
+  if (thread_current()->priority < 
+  list_entry(list_begin(&ready_list), struct thread, elem)->priority){
     thread_yield();
   }
 }
@@ -613,7 +614,8 @@ donate (struct thread *t)
     t->priority = t->old_priority;
   }
   else {
-    if (list_entry(list_front(&t->donators_list), struct thread, donatelem)->priority > t->old_priority )
+    if (list_entry(list_front(&t->donators_list), 
+    struct thread, donatelem)->priority > t->old_priority )
     {
       struct thread *p = list_entry(list_front(&t->donators_list), 
       struct thread, donatelem);
@@ -646,7 +648,8 @@ test_thread (void)
 void check_priority (void) 
 {
   struct thread *new_thread; 
-  new_thread = list_entry(list_begin(&thread_current() -> donators_list), struct thread, donatelem);
+  new_thread = list_entry(list_begin(&thread_current()->
+  donators_list), struct thread, donatelem);
 
   if ((new_thread->priority) > (thread_current()->priority))
   {
