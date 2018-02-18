@@ -237,7 +237,7 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  list_push_back (&ready_list, &t->elem);
+  list_insert_ordered(&ready_list, &t->elem, priority_comp, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
@@ -339,7 +339,11 @@ thread_set_priority (int new_priority)
 
   thread_current ()->old_priority = stored_priority;
   thread_current ()->priority = new_priority;
-  if (thread_current()->priority < list_entry(list_front(&ready_list), struct thread, elem)->priority){
+  if (!list_empty(&thread_current()->donators_list))
+  {
+    check_priority();
+  }
+  if (thread_current()->priority < list_entry(list_begin(&ready_list), struct thread, elem)->priority){
     thread_yield();
   }
 }
@@ -463,15 +467,13 @@ init_thread (struct thread *t, const char *name, int priority)
   ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
   ASSERT (name != NULL);
 
-
-  list_init (&t->donators_list);
-
-
   memset (t, 0, sizeof *t);
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
+  t->wanted_lock = NULL;
+  list_init (&t->donators_list);
   t->old_priority = priority;
   t->magic = THREAD_MAGIC;
 
@@ -631,7 +633,7 @@ test_thread (void)
   {
     return;
   }
-  struct thread *t = list_entry(list_front(&ready_list), 
+  struct thread *t = list_entry(list_begin(&ready_list), 
   struct thread, elem);
 
   if (thread_current()->priority < t->priority)
@@ -639,6 +641,17 @@ test_thread (void)
     thread_yield();
   }
 
+}
+
+void check_priority (void) 
+{
+  struct thread *new_thread; 
+  new_thread = list_entry(list_begin(&thread_current() -> donators_list), struct thread, donatelem);
+
+  if ((new_thread->priority) > (thread_current()->priority))
+  {
+    thread_current()->priority = new_thread->priority;
+  }
 }
 
 

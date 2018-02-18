@@ -145,3 +145,5 @@ int thread_get_load_avg (void);
 bool priority_comp (struct list_elem *a, struct list_elem *b, void *aux); /*Comp Pri to sort list. */
 void donate (struct thread *t); /*Donate priority when lock is unreachable*/
 #endif /* threads/thread.h */
+void test_thread (void); /*Checks front of the ready list to current thread*/
+void check_priority (void); /*Compares new thread's priority to highest priority of the donators list*/

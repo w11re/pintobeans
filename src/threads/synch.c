@@ -207,7 +207,7 @@ lock_acquire (struct lock *lock)
     thread_current()->wanted_lock = NULL;
     lock->holder = thread_current ();
   } 
-
+  else {
     thread_current()->wanted_lock = lock;
     list_insert_ordered(&lock->holder->donators_list, &thread_current()->donatelem, &priority_comp, NULL);
     donate(lock->holder);
@@ -259,15 +259,17 @@ lock_release (struct lock *lock)
 
   enum intr_level old_level;
   old_level = intr_disable();
-  /*while(!list_empty(&lock->holder->donators_list))
-    {
-       list_pop_front(&lock->holder->donators_list);
-    }
-*/
 
+
+  struct list_elem *elem;
+  struct thread *t;
+  for (elem=list_begin(&thread_current() -> donators_list); elem != list_end(&thread_current() -> donators_list); elem = list_next(elem)) 
+  {
+    t = list_entry(elem, struct thread, donatelem);
+      if (t -> wanted_lock == lock)
+        list_remove(elem);
+  }
   sema_up (&lock->semaphore);
-  //list_remove (&lock->holder->donatelem);
-
   lock->holder->priority = lock->holder->old_priority;
   lock->holder = NULL;
   intr_set_level (old_level);
@@ -333,7 +335,7 @@ cond_wait (struct condition *cond, struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
   
   sema_init (&waiter.semaphore, 0);
-  list_push_back (&cond->waiters, &waiter.elem);
+  list_insert_ordered(&cond -> waiters, &waiter.elem, &priority_comp, NULL);
   lock_release (lock);
   sema_down (&waiter.semaphore);
   lock_acquire (lock);
