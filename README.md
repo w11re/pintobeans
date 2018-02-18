@@ -1,5 +1,5 @@
 			+--------------------+
-			|        CS 140      |
+			|      CS 320CA      |
 			| PROJECT 1: THREADS |
 			|   DESIGN DOCUMENT  |
 			+--------------------+
