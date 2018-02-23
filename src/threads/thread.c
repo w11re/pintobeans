@@ -58,6 +58,7 @@ static unsigned thread_ticks;   /* # of timer ticks since last yield. */
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
 bool thread_mlfqs;
+static int load_avg;            /* Average number of threads ready to run*/
 
 static void kernel_thread (thread_func *, void *aux);
 
@@ -98,6 +99,7 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
+  load_avg = 0;                 /* Initialized to 0 at boot*/
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -200,6 +202,8 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
+  
+  if (thread_mlfqs) {calculate_priority();}
   test_thread();
   return tid;
 }
@@ -358,33 +362,54 @@ thread_get_priority (void)
 
 /* Sets the current thread's nice value to NICE. */
 void
-thread_set_nice (int nice UNUSED) 
+thread_set_nice (int nice) 
 {
-  /* Not yet implemented. */
+  thread_current()->nice = nice;
+  calculate_recent_cpu ();
+  calculate_priority ();
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  return thread_current ()->nice;
 }
 
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  int x;
+  x = CONVERT_TO_INT_NEAR (100 * load_avg);
+  return x; /* Returns 100 * the cur load_avg, rounded nearest int. */
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  int x;
+  x = CONVERT_TO_INT_NEAR (100 * thread_current ()->recent_cpu);
+  return x; /* Returns 100 * the cur recent cpu, rounded nearest int. */
+}
+
+void
+calculate_priority (void)
+{
+	
+}
+
+void
+calculate_recent_cpu (void)
+{
+	
+}
+
+void
+calculate_load_avg (void)
+{
+	
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.

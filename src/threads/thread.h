@@ -24,6 +24,11 @@ typedef int tid_t;
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
 
+/* Thread niceness. */
+#define NICE_MIN -20
+#define NICE_DEFAULT 0
+#define NICE_MAX 20
+ 
 /* A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -90,6 +95,8 @@ struct thread
     int priority;                       /* Priority. */
     int old_priority;                   /* Old priority before donation. */
     struct list_elem allelem;           /* List element for all threads list. */
+	int nice;							/* Nice values to calculate priority mlqs. */
+	int recent_cpu;						/* Recent CPU time given to thread*/
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
@@ -141,6 +148,10 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+void calculate_priority (void);
+void calculate_recent_cpu (void);
+void calculate_load_avg (void);
 
 bool priority_comp (struct list_elem *a, struct list_elem *b, void *aux); /*Comp Pri to sort list. */
 void donate (struct thread *t); /*Donate priority when lock is unreachable*/
