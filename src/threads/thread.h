@@ -25,20 +25,20 @@ typedef int tid_t;
 #define PRI_MAX 63                      /* Highest priority. */
 
 /* Thread niceness. */
-#define NICE_MIN -20
-#define NICE_DEFAULT 0
-#define NICE_MAX 20
+#define NICE_MIN -20                    /*Lowest nice -20. */
+#define NICE_DEFAULT 0					/*Default nice 0. */
+#define NICE_MAX 20						/*Max nice 20. */
 
 /* Fixed Points Arithmetics. */
 #define P 17                            /* 17.14 representation. */
-#define Q 14
-#define F 1<<(Q)
-#define FP_REP(x) (x) * (F)
-#define ADD(x, n) (x) + (n) * (F)
-#define SUB(x, n) (x) - (n) * (F)
+#define Q 14							/* 17.14 representation. */
+#define F 1<<(Q)						/* f value for fraction. */
+#define FP_REP(x) (x) * (F)				/* FP representation. */
+#define ADD(x, n) (x) + (n) * (F)		/* Add FP with int.  */
+#define SUB(x, n) (x) - (n) * (F)		/* Sub FP with int. */
 #define INT_NEAR(x) ((x) >= 0 ? ((x) + (F) / 2) / (F) : ((x) - (F) / 2) / (F))
-#define INT_ZERO(x) (x) / (F)
-#define FP_PRODUCT(x, y) (((int64_t)(x)) * (y) / (F))
+#define INT_ZERO(x) (x) / (F)           /* Convert to INT near zero. */
+#define FP_PRODUCT(x, y) (((int64_t)(x)) * (y) / (F)) 
 #define FP_DIV ((int64_t)(x)) * (F) / (y)
 
 /* A kernel thread or user process.
@@ -162,7 +162,7 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void calculate_priority (struct thread *t);
-void calculate_recent_cpu (void);
+void calculate_recent_cpu (struct thread *t);
 void calculate_load_avg (void);
 
 bool priority_comp (struct list_elem *a, struct list_elem *b, void *aux); /*Comp Pri to sort list. */

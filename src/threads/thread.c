@@ -175,6 +175,7 @@ thread_create (const char *name, int priority,
   tid_t tid;
 
   ASSERT (function != NULL);
+  ASSERT (priority >= PRI_MIN && priority <= PRI_MAX);
 
   /* Allocate thread. */
   t = palloc_get_page (PAL_ZERO);
@@ -203,7 +204,10 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
   
-  if (thread_mlfqs) {calculate_priority();}
+  if (thread_mlfqs) 
+    {
+	  calculate_priority(t);
+	}
   test_thread();
   return tid;
 }
@@ -397,19 +401,39 @@ thread_get_recent_cpu (void)
 void
 calculate_priority (struct thread *t)
 {
+  t->priority = PRI_MAX - INT_NEAR (t->recent_cpu/4) - t->nice * 2 ;
   
+  if (t->priority < PRI_MIN)
+    {
+	  t->priority = PRI_MIN; 
+    }
+  else if (t->priority > PRI_MAX)
+    {
+	  t->priority = PRI_MAX;
+	}
 }
 
 void
-calculate_recent_cpu (void)
+calculate_recent_cpu (struct thread *t)
 {
-	
+  int load = 2 * load_avg;
+  t->recent_cpu = ADD (FP_PRODUCT(FP_DIV (load, ADD (load, 1)), t->recent_cpu), t->nice);
 }
 
 void
 calculate_load_avg (void)
 {
-	
+  int num_ready_threads;
+  
+  if (thread_current () != idle_thread)
+    {
+	  num_ready_threads = list_size (&ready_list) + 1;
+	}
+  else
+    {
+	  num_ready_threads = list_size (&ready_list);
+	}
+  load_avg = FP_PRODUCT (FP_REP (59) / 60, load_avg) + FP_REP (1) / 60 * r
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
@@ -497,12 +521,26 @@ init_thread (struct thread *t, const char *name, int priority)
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
-  t->priority = priority;
+  if (!thread_mlfqs)
+    {
+	  t->priority = priority;
+	  t->old_priority = priority;
+    }
   t->wanted_lock = NULL;
   list_init (&t->donators_list);
-  t->old_priority = priority;
   t->magic = THREAD_MAGIC;
-
+  if (thread_mlfqs)
+  {
+    t->nice = NICE_DEFAULT;
+	if (t == initial_thread)
+	{
+		t->recent_cpu = 0;
+	}
+	else
+	{
+		t->recent_cpu = thread_get_recent_cpu();
+	}
+  }
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
