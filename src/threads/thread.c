@@ -381,7 +381,7 @@ int
 thread_get_load_avg (void) 
 {
   int x;
-  x = CONVERT_TO_INT_NEAR (100 * load_avg);
+  x = INT_NEAR (100 * load_avg);
   return x; /* Returns 100 * the cur load_avg, rounded nearest int. */
 }
 
@@ -390,14 +390,14 @@ int
 thread_get_recent_cpu (void) 
 {
   int x;
-  x = CONVERT_TO_INT_NEAR (100 * thread_current ()->recent_cpu);
+  x = INT_NEAR (100 * thread_current ()->recent_cpu);
   return x; /* Returns 100 * the cur recent cpu, rounded nearest int. */
 }
 
 void
-calculate_priority (void)
+calculate_priority (struct thread *t)
 {
-	
+  
 }
 
 void
