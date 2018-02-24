@@ -369,8 +369,8 @@ void
 thread_set_nice (int nice) 
 {
   thread_current()->nice = nice;
-  calculate_recent_cpu ();
-  calculate_priority ();
+  calculate_recent_cpu (thread_current());
+  calculate_priority (thread_current());
 }
 
 /* Returns the current thread's nice value. */
@@ -433,7 +433,7 @@ calculate_load_avg (void)
     {
 	  num_ready_threads = list_size (&ready_list);
 	}
-  load_avg = FP_PRODUCT (FP_REP (59) / 60, load_avg) + FP_REP (1) / 60 * r
+  load_avg = FP_PRODUCT (FP_REP (59) / 60, load_avg) + FP_REP (1) / 60 * num_ready_threads;
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.

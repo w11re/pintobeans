@@ -39,7 +39,7 @@ typedef int tid_t;
 #define INT_NEAR(x) ((x) >= 0 ? ((x) + (F) / 2) / (F) : ((x) - (F) / 2) / (F))
 #define INT_ZERO(x) (x) / (F)           /* Convert to INT near zero. */
 #define FP_PRODUCT(x, y) (((int64_t)(x)) * (y) / (F)) 
-#define FP_DIV ((int64_t)(x)) * (F) / (y)
+#define FP_DIV(x, y) ((int64_t)(x)) * (F) / (y)
 
 /* A kernel thread or user process.
 
