@@ -447,7 +447,7 @@ all_recent_cpu (void)
     {
       t = list_entry (elem, struct thread, allelem);
       calculate_recent_cpu (t);
-      eelem = list_next (elem);
+      elem = list_next (elem);
     }
 }
 
@@ -462,12 +462,12 @@ all_priority (void)
     {
       t = list_entry (elem, struct thread, allelem);
       calculate_recent_cpu (t);
-      eelem = list_next (elem);
+      elem = list_next (elem);
     }
   
   if (!list_empty (&ready_list))
   {
-	  list_sort(&ready_list, priority_comp, NULL)
+	  list_sort(&ready_list, priority_comp, NULL);
   }
 }
 
