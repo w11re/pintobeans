@@ -435,6 +435,41 @@ calculate_load_avg (void)
 	}
   load_avg = FP_PRODUCT (FP_REP (59) / 60, load_avg) + FP_REP (1) / 60 * num_ready_threads;
 }
+
+void
+all_recent_cpu (void)
+{
+  struct list_elem *elem;
+  struct thread *t;
+  
+  elem = list_begin (&all_list);
+  while (elem != list_end (&all_list))
+    {
+      t = list_entry (elem, struct thread, allelem);
+      calculate_recent_cpu (t);
+      eelem = list_next (elem);
+    }
+}
+
+void
+all_priority (void)
+{
+  struct list_elem *elem;
+  struct thread *t;
+  
+  elem = list_begin (&all_list);
+  while (elem != list_end (&all_list))
+    {
+      t = list_entry (elem, struct thread, allelem);
+      calculate_recent_cpu (t);
+      eelem = list_next (elem);
+    }
+  
+  if (!list_empty (&ready_list))
+  {
+	  list_sort(&ready_list, priority_comp, NULL)
+  }
+}
 
 /* Idle thread.  Executes when no other thread is ready to run.
 
