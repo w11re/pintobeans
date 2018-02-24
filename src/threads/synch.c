@@ -267,7 +267,7 @@ lock_release (struct lock *lock)
 
   struct list_elem *elem;
   struct thread *t;
-  if (!thread_mlqs)
+  if (!thread_mlfqs)
   {
     for (elem=list_begin(&thread_current() -> donators_list);
     elem != list_end(&thread_current()->donators_list); elem = list_next(elem)) 
