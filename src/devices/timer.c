@@ -184,7 +184,6 @@ timer_interrupt (struct intr_frame *args UNUSED)
     if (ticks % 4 == 3)
       all_priority ();
   }
-  alarm_check (); /* Check the alarm and wake up threads */
   /* == My Implementation */
 }
 
