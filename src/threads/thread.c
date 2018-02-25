@@ -205,9 +205,9 @@ thread_create (const char *name, int priority,
   thread_unblock (t);
   
   if (thread_mlfqs) 
-    {
-	  calculate_priority(t);
-	}
+  {
+	calculate_priority(t);
+  }
   test_thread();
   return tid;
 }
@@ -398,21 +398,25 @@ thread_get_recent_cpu (void)
   return x; /* Returns 100 * the cur recent cpu, rounded nearest int. */
 }
 
+/* Calculate priority using priority = PRI_MAX - (recent_cpu / 4) - (nice * 2). */
 void
 calculate_priority (struct thread *t)
 {
   t->priority = PRI_MAX - INT_NEAR (t->recent_cpu/4) - t->nice * 2 ;
   
   if (t->priority < PRI_MIN)
-    {
-	  t->priority = PRI_MIN; 
-    }
+  {
+	t->priority = PRI_MIN; 
+  }
   else if (t->priority > PRI_MAX)
-    {
-	  t->priority = PRI_MAX;
-	}
+  {
+	t->priority = PRI_MAX;
+  }
+  
+  list_sort (&ready_list, priority_comp, NULL);
 }
 
+/* Calculate recent_cpu using recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice. */
 void
 calculate_recent_cpu (struct thread *t)
 {
@@ -420,6 +424,7 @@ calculate_recent_cpu (struct thread *t)
   t->recent_cpu = ADD (FP_PRODUCT(FP_DIV (load, ADD (load, 1)), t->recent_cpu), t->nice);
 }
 
+/* Calculate load_avg using load_avg = (59/60)*load_avg + (1/60)*ready_threads. */
 void
 calculate_load_avg (void)
 {
@@ -436,40 +441,7 @@ calculate_load_avg (void)
   load_avg = FP_PRODUCT (FP_REP (59) / 60, load_avg) + FP_REP (1) / 60 * num_ready_threads;
 }
 
-void
-all_recent_cpu (void)
-{
-  struct list_elem *elem;
-  struct thread *t;
-  
-  elem = list_begin (&all_list);
-  while (elem != list_end (&all_list))
-    {
-      t = list_entry (elem, struct thread, allelem);
-      calculate_recent_cpu (t);
-      elem = list_next (elem);
-    }
-}
 
-void
-all_priority (void)
-{
-  struct list_elem *elem;
-  struct thread *t;
-  
-  elem = list_begin (&all_list);
-  while (elem != list_end (&all_list))
-    {
-      t = list_entry (elem, struct thread, allelem);
-      calculate_recent_cpu (t);
-      elem = list_next (elem);
-    }
-  
-  if (!list_empty (&ready_list))
-  {
-	  list_sort(&ready_list, priority_comp, NULL);
-  }
-}
 
 /* Idle thread.  Executes when no other thread is ready to run.
 

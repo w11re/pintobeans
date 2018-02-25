@@ -164,8 +164,6 @@ int thread_get_load_avg (void);
 void calculate_priority (struct thread *t);
 void calculate_recent_cpu (struct thread *t);
 void calculate_load_avg (void);
-void all_recent_cpu (void);
-void all_priority (void);
 
 bool priority_comp (struct list_elem *a, struct list_elem *b, void *aux); /*Comp Pri to sort list. */
 void donate (struct thread *t); /*Donate priority when lock is unreachable*/
