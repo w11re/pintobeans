@@ -100,6 +100,23 @@ We chose this design because it was the the simplest and most efficient way we c
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+Thread.h:
+	int nice - Nice value of thread, determines how "nice" the thread should be to other threads. */
+	int recent_cpu - Measures how much CPU time each process has received "recently."
+	#define NICE_MIN -20 - Lowest nice value is -20. 
+	#define NICE_DEFAULT 0 - Default nice is 0. 
+	#define NICE_MAX 20	- Max nice is 20.
+	#define P 17 - 17.14 fixed point representation, 17 bits before decimal.
+	#define Q 14 - 17.14 representation, 14 bits after decimal.
+	#define F 1<<(Q) - fraction used to convert FP/INT.
+	#define FP_REP(x) (x) * (F) - convert INT to FP.
+	#define ADD(x, n) (x) + (n) * (F) - FP and INT addition.
+	#define SUB(x, n) (x) - (n) * (F) - FP and INT subtraction.
+	#define INT_NEAR(x) ((x) >= 0 ? ((x) + (F) / 2) / (F) : ((x) - (F) / 2) / (F)) - converts FP to int closer to next int.
+	#define INT_ZERO(x) (x) / (F) - converts FP to INT closer to zero.
+	#define FP_PRODUCT(x, y) (((int64_t)(x)) * (y) / (F)) 
+	#define FP_DIV(x, y) ((int64_t)(x)) * (F) / (y)
+
 ---- ALGORITHMS ----
 
 >> C2: Suppose threads A, B, and C have nice values 0, 1, and 2.  Each
@@ -110,20 +127,21 @@ We chose this design because it was the the simplest and most efficient way we c
 timer  recent_cpu    priority   thread
 ticks   A   B   C   A   B   C   to run
 -----  --  --  --  --  --  --   ------
- 0
- 4
- 8
-12
-16
-20
-24
-28
-32
-36
+0      0   0    0   63.00 61.00 59.00   A
+4      4   0    0   62.00 61.00 59.00   A
+8      8   0    0   61.00 61.00 59.00   A
+12     12  0    0   60.00 61.00 59.00   B
+16     12  4    0   60.00 60.00 59.00   B
+20     12  8    0   60.00 59.00 59.00   A
+24     16  8    0   59.00 59.00 59.00   A
+28     20  8    0   58.00 59.00 59.00   C
+32     20  8    4   58.00 59.00 58.00   B
+36     20  12   4   58.00 58.00 58.00   B
 
 >> C3: Did any ambiguities in the scheduler specification make values
 >> in the table uncertain?  If so, what rule did you use to resolve
 >> them?  Does this match the behavior of your scheduler?
+
 
 >> C4: How is the way you divided the cost of scheduling between code
 >> inside and outside interrupt context likely to affect performance?
@@ -141,6 +159,12 @@ ticks   A   B   C   A   B   C   to run
 >> abstraction layer for fixed-point math, that is, an abstract data
 >> type and/or a set of functions or macros to manipulate fixed-point
 >> numbers, why did you do so?  If not, why not?
+
+Within the assignment/pintos's documentation, there was a mention of a separate 
+header file that would be used to for fixed point arithmetics, called fixed_point.h. 
+However, we decided to create a set of macros to manipulate and representation
+fixed point numbers and arithmetics. This was done for simplicity as we did not
+have to create a separate header file for fixed point arithmetics. 
 
 			   SURVEY QUESTIONS
 			   ================
