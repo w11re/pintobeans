@@ -125,6 +125,20 @@ void
 thread_tick (void) 
 {
   struct thread *t = thread_current ();
+  
+  if( thread_mlfqs )
+  {
+    if( timer_ticks() % TIMER_FREQ == 0 )		/* System tick counter reaches a multiple of a second. */
+    {
+      calculate_load_avg();
+	  calculate_recent_cpu(t);
+    }
+    
+    if( timer_ticks() % 4 == 0 )                /* Recalculate priority once every fourth clock tick. */
+    {
+      calculate_priority(t);
+    }
+  }
 
   /* Update statistics. */
   if (t == idle_thread)
@@ -204,10 +218,8 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
   
-  if (thread_mlfqs) 
-  {
-	calculate_priority(t);
-  }
+  if (thread_mlfqs)
+    calculate_priority(t);
   test_thread();
   return tid;
 }
@@ -405,13 +417,9 @@ calculate_priority (struct thread *t)
   t->priority = PRI_MAX - INT_NEAR (t->recent_cpu/4) - t->nice * 2 ;
   
   if (t->priority < PRI_MIN)
-  {
-	t->priority = PRI_MIN; 
-  }
+    t->priority = PRI_MIN; 
   else if (t->priority > PRI_MAX)
-  {
-	t->priority = PRI_MAX;
-  }
+    t->priority = PRI_MAX;
   
   list_sort (&ready_list, priority_comp, NULL);
 }
@@ -431,13 +439,9 @@ calculate_load_avg (void)
   int num_ready_threads;
   
   if (thread_current () != idle_thread)
-    {
-	  num_ready_threads = list_size (&ready_list) + 1;
-	}
+    num_ready_threads = list_size (&ready_list) + 1;
   else
-    {
-	  num_ready_threads = list_size (&ready_list);
-	}
+    num_ready_threads = list_size (&ready_list);
   load_avg = FP_PRODUCT (FP_REP (59) / 60, load_avg) + FP_REP (1) / 60 * num_ready_threads;
 }
 
@@ -528,26 +532,28 @@ init_thread (struct thread *t, const char *name, int priority)
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
+  
   if (!thread_mlfqs)
-    {
-	  t->priority = priority;
-	  t->old_priority = priority;
-    }
+  {
+    t->priority = priority;
+    t->old_priority = priority;
+  }
+  
   t->wanted_lock = NULL;
   list_init (&t->donators_list);
   t->magic = THREAD_MAGIC;
+  
   if (thread_mlfqs)
-  {
-    t->nice = NICE_DEFAULT;
-	if (t == initial_thread)
-	{
-		t->recent_cpu = 0;
-	}
+  {             
+    if (t == initial_thread)
+      t->recent_cpu = 0;                     /*If init thread, default values for nice/cpu. */
+      t->nice = NICE_DEFAULT;
 	else
-	{
-		t->recent_cpu = thread_get_recent_cpu();
-	}
+	  t->nice = thread_current()->nice; 
+      t->recent_cpu = thread_get_recent_cpu();
+	calculate_priority(t);
   }
+  
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
@@ -712,7 +718,6 @@ test_thread (void)
   {
     thread_yield();
   }
-
 }
 
 void check_priority (void) 
