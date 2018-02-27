@@ -9,6 +9,7 @@
 >> Fill in the names and email addresses of your group members.
 
 Hieu Tran <htran@cogswell.edu>
+
 Duy Nguyen <dcnguyen@cogswell.edu>
 
 
@@ -143,8 +144,12 @@ ticks   A   B   C   A   B   C   to run
 >> them?  Does this match the behavior of your scheduler?
 
 
+A specific ambiguity is the recent_cpu as we cannot define how much time it spends running as the thread(s) needs to yield during calculations for recent_cpu, load_avg, and priority. Every so often amount of ticks we predicted is not the actual amount.
+
 >> C4: How is the way you divided the cost of scheduling between code
 >> inside and outside interrupt context likely to affect performance?
+
+The cost of scheduling outside of the interrupt will hinder the performance of the CPU less than if the cost of scheduling inside goes up. The CPU could potentially take too much time on calculations for recent_cpu and load_avg and lower the thread priority.
 
 ---- RATIONALE ----
 
@@ -153,12 +158,18 @@ ticks   A   B   C   A   B   C   to run
 >> time to work on this part of the project, how might you choose to
 >> refine or improve your design?
 
+Our implementation did not work and more time and guidance would have helped. 
+
+
+
 >> C6: The assignment explains arithmetic for fixed-point math in
 >> detail, but it leaves it open to you to implement it.  Why did you
 >> decide to implement it the way you did?  If you created an
 >> abstraction layer for fixed-point math, that is, an abstract data
 >> type and/or a set of functions or macros to manipulate fixed-point
 >> numbers, why did you do so?  If not, why not?
+
+We use fixed-point numbers to represent recent_cpu and load_avg because pintos does not allow you to use float numbers.
 
 Within the assignment/pintos's documentation, there was a mention of a separate 
 header file that would be used to for fixed point arithmetics, called fixed_point.h. 
@@ -189,3 +200,5 @@ the quarter.
 >> students, either for future quarters or the remaining projects?
 
 >> Any other comments?
+
+
